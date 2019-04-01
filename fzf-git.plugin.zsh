@@ -16,8 +16,8 @@ _fzf_complete_gco() {
 }
 
 fzf_complete_branch() {
-  git branch -a --color=always | \
-    grep -v '/HEAD\s' | sort | \
+  git branch -a | \
+    grep -vw 'HEAD' | sort | \
     sed 's/^..//' | cut -d' ' -f1 | \
     sed 's|^\(\x1b\[[0-9;]*m\)remotes/\(.*\)|\1\2|' | \
     _fzf_complete "--reverse --multi" "$@" 
