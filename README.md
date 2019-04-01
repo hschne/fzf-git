@@ -10,11 +10,10 @@ align="center">Git completions, powered by fzf</p>
 
 ![Demo Gif](/demo.gif)
 
-fzf-git is a simple zsh plugin that enables fzf-style completions for git commands. Requires [fzf](https://github.com/junegunn/fzf) (if that wasn't obvious). 
 
 ## Installation
 
-Use the plugin manager of your choice to install fzf-git
+Make sure you have [fzf](https://github.com/junegunn/fzf) installed. Then use the plugin manager of your choice to install fzf-git.
 
 ### Zplug
 
