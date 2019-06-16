@@ -7,7 +7,8 @@
 _fzf_complete_git() {
     ARGS="$@"
     is_in_git_repo || return
-    [[ $ARGS == 'git checkout'* || $ARGS == 'git co'* ]] && fzf_complete_branch "$ARGS"
+    [[ $ARGS == 'git checkout'* || $ARGS == 'git co'* || $ARGS == 'g co'* || $ARGS == 'g checkout'* ]] && \
+      fzf_complete_branch "$ARGS"
 }
 
 _fzf_complete_gco() {
