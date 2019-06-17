@@ -41,7 +41,7 @@ This plugin simply enables auto-completion of git commands using the `**` trigge
 git checkout **<TAB>
 ```
 
-to get a fuzzy-searchable list of branches. Currently only `git checkout` and its aliases (`git co`, `gco`) are supported.
+to get a fuzzy-searchable list of branches. Currently only `git checkout` and its aliases (`git co`, `gco`, `g checkout`, `g co`) are supported.
 
 ## License
 
