@@ -14,17 +14,18 @@ hash diff-so-fancy &>/dev/null && fzf_git_fancy='|diff-so-fancy'
 hash emojify &>/dev/null && fzf_git_emojify='|emojify'
 
 fzf-git::add() {
-    fzf-git::inside_work_tree || { fzf-git::info "Not a git repository"; return 1; }
+  fzf-git::inside_work_tree || { fzf-git::info "Not a git repository"; return 1; }
 
-    opts="
+  opts="
         $FZF_GIT_DEFAULT_OPTS
+        $FZF_GIT_PREVIEW_DEFAULT_OPTS
         -0 -m --nth 2..,..
         --preview=\"git diff --color=always -- {-1} $fzf_git_emojify $fzf_git_fancy\"
     "
-    files=$(fzf-git::list_unstaged_files | 
-        FZF_DEFAULT_OPTS="$opts" fzf | cut -d] -f2 |
-        sed 's/.* -> //') # for rename case
-    [[ -n "$files" ]] && echo "$files" |xargs -I{} git add {} && git status --short && return
+  files=$(fzf-git::list_unstaged_files | 
+    FZF_DEFAULT_OPTS="$opts" fzf | cut -d] -f2 |
+    sed 's/.* -> //') # for rename case
+  [[ -n "$files" ]] && echo "$files" |xargs -I{} git add {} && git status --short && return
 }
 
 fzf-git::checkout_file() {
@@ -36,13 +37,14 @@ fzf-git::checkout_file() {
   cmd="git diff --color=always -- {} $fzf_git_emojify $fzf_git_fancy"
   opts="
         $FZF_GIT_DEFAULT_OPTS
+        $FZF_GIT_PREVIEW_DEFAULT_OPTS
         -m -0 --preview=\"$cmd\"
     "
   files="$(fzf-git::list_staged_files | FZF_DEFAULT_OPTS="$opts" fzf)"
   [[ -n "$files" ]] && echo "$files" |xargs -I{} git checkout {} && git status --short && return
 }
 
-fzf-git::reset_head() {
+fzf-git::reset() {
   fzf-git::inside_work_tree || { fzf-git::info "Not a git repository"; return 1; }
 
   [[ "$#" -ge 1 ]] && { git reset HEAD "$@"; return "$?"; }
@@ -50,6 +52,7 @@ fzf-git::reset_head() {
   cmd="git diff --cached --color=always -- {} $fzf_git_emojify $fzf_git_fancy"
   opts="
         $FZF_GIT_DEFAULT_OPTS
+        $FZF_GIT_PREVIEW_DEFAULT_OPTS
         -m -0 --preview=\"$cmd\"
     "
   files="$(fzf-git::list_cached | FZF_DEFAULT_OPTS="$opts" fzf)"
@@ -60,7 +63,10 @@ fzf-git::checkout_branch() {
   fzf-git::inside_work_tree || { fzf-git::info "Not a git repository"; return 1; }
   [[ "$#" -ge 1 ]] && { git checkout "$@"; return "$?"; }
 
-  local opts="$FZF_GIT_DEFAULT_OPTS"
+  local opts="
+    $FZF_GIT_DEFAULT_OPTS
+    $FZF_GIT_PREVIEW_DEFAULT_OPTS
+  "
   branch=$(fzf-git::list_all_branches | \
     FZF_DEFAULT_OPTS="$opts" fzf )
   [[ -n "$branch" ]] && git checkout "$branch"
@@ -71,7 +77,9 @@ fzf-git::delete_branch() {
   fzf-git::inside_work_tree || { fzf-git::info "Not a git repository"; return 1; }
   [[ "$#" -ge 1 ]] && { git branch -d "$@"; return "$?"; }
 
-  local opts="$FZF_GIT_DEFAULT_OPTS"
+  local opts="
+    $FZF_GIT_DEFAULT_OPTS
+  "
   branch=$(fzf-git::list_local_branches | \
     FZF_DEFAULT_OPTS="$opts" fzf )
   [[ -n "$branch" ]] && git branch -d "$branch"
@@ -87,6 +95,7 @@ fzf-git::diff() {
 
   opts="
         $FZF_GIT_DEFAULT_OPTS
+        $FZF_GIT_PREVIEW_DEFAULT_OPTS
         +m -0 --preview=\"$cmd\" --bind=\"enter:execute($cmd |LESS='-R' less)\"
     "
   git ls-files --modified "$files" |
@@ -100,6 +109,15 @@ fzf-git::complete_staged_files() {
   local opts="$FZF_GIT_DEFAULT_OPTS"
 
   _fzf_complete "$opts" "$@" < <(fzf-git::list_staged_files)
+}
+
+fzf-git::complete_unstaged_files() {
+  fzf-git::inside_work_tree || { fzf-git::info "Not a git repository"; return 1; }
+
+  # TODO: Figure out a way to do preview here as well?
+  local opts="$FZF_GIT_DEFAULT_OPTS"
+
+  _fzf_complete "$opts" "$@" < <(fzf-git::list_unstaged_files)
 }
 
 fzf-git::complete_all_branches() {
@@ -117,6 +135,15 @@ fzf-git::complete_local_branches() {
 
   _fzf_complete "$opts" "$@" < <(fzf-git::list_local_branches)
 }
+
+fzf-git::complete_cached_files() {
+  fzf-git::inside_work_tree || { fzf-git::info "Not a git repository"; return 1; }
+
+  local opts="$FZF_GIT_DEFAULT_OPTS"
+
+  _fzf_complete "$opts" "$@" < <(fzf-git::list_cached)
+}
+
 
 fzf-git::list_staged_files() {
   git ls-files --modified "$(git rev-parse --show-toplevel)"
@@ -136,7 +163,6 @@ fzf-git::list_cached(){
   git diff --cached --name-only
 }
 
-
 fzf-git::list_all_branches() {
   git branch -a | \
     grep -vw 'HEAD' | sort | \
@@ -151,17 +177,19 @@ fzf-git::list_local_branches() {
 }
 
 fzf-git::setup_completions() {
-  eval "_fzf_complete_gco() { fzf-git::complete_staged_files \$@ }"
-  eval "_fzf_complete_gcof() { fzf-git::complete_staged_files \$@ }"
-  eval "_fzf_complete_gcob() { fzf-git::complete_all_branches \$@ }"
-  eval "_fzf_complete_gbd() { fzf-git::complete_local_branches \$@ }"
-  # for cmd in ${FZF_GIT_BRANCH_COMPLETIONS[@]}; do
-  #   eval "_fzf_complete_$cmd() { fzf-git::complete_branch \$@ }"
-  # done
+  _fzf_complete_ga() { fzf-git::complete_unstaged_files $@ }
+  _fzf_complete_gco() { fzf-git::complete_staged_files $@ }
+  _fzf_complete_gcof() { fzf-git::complete_staged_files $@ }
+  _fzf_complete_gcob() { fzf-git::complete_all_branches $@ }
+  _fzf_complete_gbd() { fzf-git::complete_local_branches $@ }
+  _fzf_complete_grh() { fzf-git::complete_cached_files $@ }
 }
 
 FZF_GIT_DEFAULT_OPTS="
   $FZF_DEFAULT_OPTS
+"
+
+FZF_GIT_PREVIEW_DEFAULT_OPTS="
   --bind='alt-k:preview-up,alt-p:preview-up'
   --bind='alt-j:preview-down,alt-n:preview-down'
   --bind='ctrl-r:toggle-all'
