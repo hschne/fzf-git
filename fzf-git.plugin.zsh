@@ -44,6 +44,20 @@ fzf-git::checkout_file() {
   [[ -n "$files" ]] && echo "$files" |xargs -I{} git checkout {} && git status --short && return
 }
 
+fzf-git::checkout_branch() {
+  fzf-git::inside_work_tree || { fzf-git::info "Not a git repository"; return 1; }
+  [[ "$#" -ge 1 ]] && { git checkout "$@"; return "$?"; }
+
+  local opts="
+    $FZF_GIT_DEFAULT_OPTS
+    --reverse
+  "
+  branch=$(fzf-git::list_all_branches | \
+    FZF_DEFAULT_OPTS="$opts" fzf )
+  [[ -n "$branch" ]] && git checkout "$branch"
+}
+
+
 fzf-git::reset() {
   fzf-git::inside_work_tree || { fzf-git::info "Not a git repository"; return 1; }
 
@@ -59,32 +73,18 @@ fzf-git::reset() {
   [[ -n "$files" ]] && echo "$files" |xargs -I{} git reset HEAD {} && git status --short && return
 }
 
-fzf-git::checkout_branch() {
-  fzf-git::inside_work_tree || { fzf-git::info "Not a git repository"; return 1; }
-  [[ "$#" -ge 1 ]] && { git checkout "$@"; return "$?"; }
-
-  local opts="
-    $FZF_GIT_DEFAULT_OPTS
-    $FZF_GIT_PREVIEW_DEFAULT_OPTS
-  "
-  branch=$(fzf-git::list_all_branches | \
-    FZF_DEFAULT_OPTS="$opts" fzf )
-  [[ -n "$branch" ]] && git checkout "$branch"
-}
-
-
-fzf-git::delete_branch() {
+fzf-git::branch_delete() {
   fzf-git::inside_work_tree || { fzf-git::info "Not a git repository"; return 1; }
   [[ "$#" -ge 1 ]] && { git branch -d "$@"; return "$?"; }
 
   local opts="
     $FZF_GIT_DEFAULT_OPTS
+    --reverse
   "
   branch=$(fzf-git::list_local_branches | \
     FZF_DEFAULT_OPTS="$opts" fzf )
   [[ -n "$branch" ]] && git branch -d "$branch"
 }
-
 
 fzf-git::diff() {
   fzf-git::inside_work_tree || { fzf-git::info "Not a git repository"; return 1; }
@@ -203,7 +203,7 @@ alias ga='fzf-git::add'
 alias gco='fzf-git::checkout_file'
 alias gcof='fzf-git::checkout_file'
 alias gcob='fzf-git::checkout_branch'
-alias gbd='fzf-git::delete_branch'
+alias gbd='fzf-git::branch_delete'
 alias gd='fzf-git::diff'
 alias grh='fzf-git::reset_head'
 
