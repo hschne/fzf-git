@@ -167,7 +167,7 @@ fzf-git::list_all_branches() {
   git branch -a | \
     grep -vw 'HEAD' | sort | \
     sed 's/^..//' | cut -d' ' -f1 | \
-    sed 's|remotes\/.*\/||' | uniq | sort
+    sed 's|remotes\/.*\/||' | sort | uniq
 }
 
 fzf-git::list_local_branches() {
