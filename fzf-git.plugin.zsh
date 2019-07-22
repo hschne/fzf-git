@@ -28,6 +28,19 @@ fzf-git::add() {
   [[ -n "$files" ]] && echo "$files" |xargs -I{} git add {} && git status --short && return
 }
 
+fzf-git::log_commits() {
+  fzf-git::inside_work_tree || { fzf-git::info "Not a git repository"; return 1; }
+
+  local cmd files opts
+  cmd="echo {} | cut -f1 -d' ' | xargs -I{} git diff {}~ {} $fzf_git_emojify $fzf_git_fancy"
+  opts="
+        $FZF_GIT_DEFAULT_OPTS
+        $FZF_GIT_PREVIEW_DEFAULT_OPTS
+        -m -0 --preview=\"$cmd\"
+    "
+  fzf-git::list_commits | FZF_DEFAULT_OPTS="$opts" fzf
+}
+
 fzf-git::checkout_file() {
   fzf-git::inside_work_tree || { fzf-git::info "Not a git repository"; return 1; }
 
@@ -89,6 +102,7 @@ fzf-git::branch_delete() {
 fzf-git::diff() {
   fzf-git::inside_work_tree || { fzf-git::info "Not a git repository"; return 1; }
   local cmd files opts
+  cmd="echo {} | cut -d \" \" -f 1 | xargs"  
   cmd="git diff --color=always -- {} $fzf_git_emojify $fzf_git_fancy"
   files="$*"
   [[ $# -eq 0 ]] && files=$(git rev-parse --show-toplevel)
@@ -159,6 +173,12 @@ fzf-git::list_unstaged_files(){
     awk '{printf "[%10s]  ", $1; $1=""; print $0}' 
 }
 
+fzf-git::list_commits() {
+  git log \
+    --pretty="%C(Yellow)%h %C(Cyan)%an: %C(reset)%s" \
+    --author-date-order
+}
+
 fzf-git::list_cached(){
   git diff --cached --name-only
 }
@@ -200,6 +220,7 @@ FZF_GIT_PREVIEW_DEFAULT_OPTS="
 "
 
 alias ga='fzf-git::add'
+alias glc='fzf-git::log_commits'
 alias gco='fzf-git::checkout_file'
 alias gcof='fzf-git::checkout_file'
 alias gcob='fzf-git::checkout_branch'
