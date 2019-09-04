@@ -10,6 +10,7 @@ align="center">Git completions, powered by fzf</p>
 
 ![Demo Gif](/demo.gif)
 
+**Disclaimer**: I'm in the process of reworking this plugin. There might be issues and some things might not work as advertised. Just shoot me a message if you would like to contribute or any other questions arise.
 
 ## Installation
 
