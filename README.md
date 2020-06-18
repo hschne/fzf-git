@@ -1,3 +1,8 @@
+
+## This plugin is no longer maintained. I found that [fzf-tab](https://github.com/Aloxaf/fzf-tab) serves the purpose of Git completions much better. 
+
+---
+
 <h1 align="center">fzf-git</h1> <p
 align="center">Git completions, powered by fzf</p>
 
@@ -9,8 +14,6 @@ align="center">Git completions, powered by fzf</p>
 <br>
 
 ![Demo Gif](/demo.gif)
-
-**Disclaimer**: This plugin is no longer maintained. I found that [fzf-tab](https://github.com/Aloxaf/fzf-tab) serves the purpose of Git completions much better. 
 
 ## Installation
 
