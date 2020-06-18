@@ -1,5 +1,7 @@
 
-## This plugin is no longer maintained. I found that [fzf-tab](https://github.com/Aloxaf/fzf-tab) serves the purpose of Git completions much better. 
+## This plugin is no longer maintained!
+
+I found that [fzf-tab](https://github.com/Aloxaf/fzf-tab) serves the purpose of Git completions much better. You can read up more on how to use fzf-tab and other completions [in this article](https://hschne.at/2020/04/25/creating-a-fuzzy-shell-with-fzf-and-friends.html)
 
 ---
 
