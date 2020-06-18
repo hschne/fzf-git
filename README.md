@@ -10,7 +10,7 @@ align="center">Git completions, powered by fzf</p>
 
 ![Demo Gif](/demo.gif)
 
-**Disclaimer**: I'm in the process of reworking this plugin. There might be issues and some things might not work as advertised. Just shoot me a message if you would like to contribute or any other questions arise.
+**Disclaimer**: This plugin is no longer maintained. I found that [fzf-tab](https://github.com/Aloxaf/fzf-tab) serves the purpose of Git completions much better. 
 
 ## Installation
 
